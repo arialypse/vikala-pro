@@ -1,0 +1,7 @@
+# ป้องกันการเข้าถึงไฟล์ทั้งหมดในโฟลเดอร์นี้ผ่าน URL (Protect CI4 Core & .env)
+<IfModule authz_core_module>
+    Require all denied
+</IfModule>
+<IfModule !authz_core_module>
+    Deny from all
+</IfModule>
