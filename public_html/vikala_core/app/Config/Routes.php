@@ -43,4 +43,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('products/disable/(:num)', 'ProductController::disable/$1');
     $routes->get('api/products/search', 'ProductController::search');
     
+    // --- Phase 3: ??????????????????? (Core Document Engine) ---
+    $routes->get('documents', 'DocumentController::index');
+    $routes->get('documents/create', 'DocumentController::create');
+    $routes->post('documents/store', 'DocumentController::store');
+    $routes->get('documents/trash/(:num)', 'DocumentController::trash/$1');
+    
 });
