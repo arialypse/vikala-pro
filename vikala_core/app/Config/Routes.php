@@ -1,25 +1,39 @@
 <?php
+
 use CodeIgniter\Router\RouteCollection;
 
 /**
  * @var RouteCollection $routes
  */
 
-// หน้าแรกสุด (Default) ถ้าเข้าเว็บมาตรงๆ ให้เด้งไปหน้า Login
+// หน้าแรกสุดของเว็บไซต์ (Default Route) ให้เด้งไปหน้า Login อัตโนมัติ
 $routes->get('/', 'AuthController::login');
 
-// กลุ่ม Routes สาธารณะ (ไม่ต้องล็อกอิน)
+// --- บล็อกระบบ Authentication (เส้นทางสาธารณะ ไม่ต้องล็อกอิน) ---
 $routes->get('login', 'AuthController::login');
 $routes->post('login', 'AuthController::processLogin');
 $routes->get('logout', 'AuthController::logout');
 
-// กลุ่ม Routes ภายใน (ต้องผ่านด่านตรวจ AuthFilter ก่อน)
+// --- บล็อกระบบปฏิบัติงานภายใน (ทุกเส้นทางต้องผ่านด่านตรวจ AuthFilter) ---
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
     
-    // หน้า Dashboard (เดี๋ยวเราจะสร้าง Controller ตัวนี้ในอนาคต)
+    // หน้าแรกหลังล็อกอินสำเร็จ (Dashboard Ecosystem)
     $routes->get('dashboard', 'DashboardController::index');
     
-    // เส้นทางสำหรับ Phase 2: ระบบลูกค้า (Customers)
+    // --- Phase 2: ระบบบริหารจัดการลูกค้าส่วนกลาง (Shared Global Customers) ---
+    // หน้าหลักแสดงรายการลูกค้า
     $routes->get('customers', 'CustomerController::index');
+    
+    // บันทึกข้อมูลลูกค้าใหม่
+    $routes->post('customers/store', 'CustomerController::store');
+    
+    // บันทึกการแก้ไขข้อมูลลูกค้าเก่า (อ้างอิงตาม ID เลขระบุตัวตน)
+    $routes->post('customers/update/(:num)', 'CustomerController::update/$1');
+    
+    // ระบบ Soft Delete เปลี่ยนสถานะปิดการใช้งาน (Disable) แทนการลบข้อมูลจริง
+    $routes->get('customers/disable/(:num)', 'CustomerController::disable/$1');
+    
+    // Endpoint API สำหรับดึงข้อมูลลูกค้าไปทำระบบพิมพ์ค้นหาอัตโนมัติ (Auto-complete) ตอนออกบิล
+    $routes->get('api/customers/search', 'CustomerController::search');
     
 });
