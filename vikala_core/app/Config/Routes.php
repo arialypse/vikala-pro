@@ -36,4 +36,20 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     // Endpoint API สำหรับดึงข้อมูลลูกค้าไปทำระบบพิมพ์ค้นหาอัตโนมัติ (Auto-complete) ตอนออกบิล
     $routes->get('api/customers/search', 'CustomerController::search');
     
+    // --- Phase 2: ระบบจัดการสินค้า/บริการ (Isolated Tenant Products) ---
+    $routes->get('products', 'ProductController::index');
+    $routes->post('products/store', 'ProductController::store');
+    $routes->post('products/update/(:num)', 'ProductController::update/$1');
+    $routes->get('products/disable/(:num)', 'ProductController::disable/$1');
+    $routes->get('api/products/search', 'ProductController::search');
+    
+    // --- Phase 3: ระบบออกบิลและเอกสาร (Core Document Engine) ---
+    $routes->get('documents', 'DocumentController::index');
+    $routes->get('documents/create', 'DocumentController::create');
+    $routes->post('documents/store', 'DocumentController::store');
+    $routes->get('documents/trash/(:num)', 'DocumentController::trash/$1');
+    
+    // --- Phase 5: ระบบพิมพ์เอกสาร PDF แบบ In-Memory (Document Print Engine) ---
+    $routes->get('documents/print/(:num)', 'DocumentController::print/$1');
+    
 });
