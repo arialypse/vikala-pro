@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WealthWise - Complete Financial Ecosystem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F3F4F9; }
+        .sidebar-active { background-color: #EEF2FF; color: #4F46E5; border-right: 4px solid #4F46E5; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="flex min-h-screen text-slate-700 antialiased">
+
+    <aside class="w-64 bg-white border-r border-slate-100 flex flex-col justify-between p-6 shrink-0 z-20">
+        <div>
+            <div class="flex items-center gap-3 mb-10 pl-2">
+                <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">W</div>
+                <span class="text-xl font-bold text-slate-900 tracking-tight">WealthWise</span>
+            </div>
+            
+            <nav class="space-y-1">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block pl-2 mb-2">Menu</span>
+                <button onclick="switchView('dashboard')" id="menu-dashboard" class="w-full flex items-center gap-4 px-4 py-3 text-slate-500 font-medium rounded-xl hover:bg-slate-50 transition-all sidebar-active text-left">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard
+                </button>
+                <button onclick="switchView('transactions')" id="menu-transactions" class="w-full flex items-center gap-4 px-4 py-3 text-slate-500 font-medium rounded-xl hover:bg-slate-50 transition-all text-left">
+                    <i class="fa-solid fa-list-check w-5 text-center"></i> Transactions
+                </button>
+                <button onclick="switchView('budgets')" id="menu-budgets" class="w-full flex items-center gap-4 px-4 py-3 text-slate-500 font-medium rounded-xl hover:bg-slate-50 transition-all text-left">
+                    <i class="fa-solid fa-wallet w-5 text-center"></i> Budgets
+                </button>
+                <button onclick="switchView('reports')" id="menu-reports" class="w-full flex items-center gap-4 px-4 py-3 text-slate-500 font-medium rounded-xl hover:bg-slate-50 transition-all text-left">
+                    <i class="fa-solid fa-chart-line w-5 text-center"></i> Reports
+                </button>
+                <button onclick="switchView('ai-insights')" id="menu-ai-insights" class="w-full flex items-center gap-4 px-4 py-3 text-slate-500 font-medium rounded-xl hover:bg-slate-50 transition-all text-left">
+                    <i class="fa-solid fa-wand-magic-sparkles w-5 text-center"></i> AI Insights
+                </button>
+            </nav>
+        </div>
+
+        <div>
+            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg shrink-0"><i class="fa-solid fa-user-tie"></i></div>
+                    <div>
+                        <h4 class="font-semibold text-slate-900 text-sm mb-1">Financial Advisor</h4>
+                        <p class="text-xs text-indigo-900/80 leading-relaxed mb-2">You spent 25% more on dining this month compared to March.</p>
+                        <button onclick="switchView('ai-insights')" class="text-xs font-semibold text-indigo-600 hover:underline text-left">See Recommendations →</button>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-1 text-sm">
+                <a href="#" class="flex items-center gap-4 px-4 py-2.5 text-slate-500 font-medium rounded-xl hover:bg-slate-50 transition-all"><i class="fa-solid fa-circle-question w-5 text-center"></i> Help</a>
+                <a href="#" class="flex items-center gap-4 px-4 py-2.5 text-slate-500 font-medium rounded-xl hover:bg-slate-50 transition-all"><i class="fa-solid fa-gear w-5 text-center"></i> Settings</a>
+            </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 h-screen">
+        
+        <header class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-10 shrink-0">
+            <h1 id="page-title" class="text-2xl font-bold text-slate-900 tracking-tight uppercase">Dashboard</h1>
+            <div class="flex items-center gap-4">
+                <div class="relative w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="global-search" onkeyup="handleGlobalSearch()" placeholder="Search transactions..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-all">
+                </div>
+                <button class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-all relative">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-emerald-500"></span>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-10 space-y-8">
+
+            <section id="view-dashboard" class="space-y-8 transition-all duration-300">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Net Worth</span>
+                            <h3 id="dash-networth" class="text-2xl font-bold text-slate-900">$12,540.50</h3>
+                            <span class="text-xs text-slate-400 block mt-1">As of April 21, 2025</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600"><i class="fa-solid fa-vault"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Income This Month</span>
+                            <h3 id="dash-income" class="text-2xl font-bold text-slate-900">$4,200.00</h3>
+                            <span class="text-xs text-emerald-600 font-semibold block mt-1"><i class="fa-solid fa-arrow-up"></i> +8% from last month</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600"><i class="fa-solid fa-money-bill-wave"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Expenses This Month</span>
+                            <h3 id="dash-expenses" class="text-2xl font-bold text-slate-900">$3,400.00</h3>
+                            <span class="text-xs text-rose-600 font-semibold block mt-1"><i class="fa-solid fa-arrow-down"></i> -5% from last month</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600"><i class="fa-solid fa-credit-card"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Budget Status</span>
+                            <h3 id="dash-budgetstatus" class="text-2xl font-bold text-slate-900">76% Used</h3>
+                            <span id="dash-budgetrem" class="text-xs text-slate-400 block mt-1">$600 remaining</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600"><i class="fa-solid fa-pie-chart"></i></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+                        <h4 class="font-bold text-slate-900 mb-4">Income vs Expenses</h4>
+                        <div class="h-64"><canvas id="chartDashBar"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-between">
+                        <div class="w-full"><h4 class="font-bold text-slate-900 mb-2">Monthly Goal</h4></div>
+                        <div class="relative w-40 h-40 flex items-center justify-center">
+                            <canvas id="chartDashDonut"></canvas>
+                            <div class="absolute text-center">
+                                <h3 id="dash-saved-txt" class="text-2xl font-bold text-slate-900">$750</h3>
+                                <span class="text-xs text-slate-400 font-medium">Saved</span>
+                            </div>
+                        </div>
+                        <div class="text-center"><span class="text-sm font-semibold text-slate-400 block">Goal: $1,000</span></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <h4 class="font-bold text-slate-900">Quick Transfer</h4>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-400 block mb-1">From Account</label>
+                                    <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"><option>Checking ****1234</option></select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-400 block mb-1">To Account</label>
+                                    <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm"><option>Savings ****5678</option></select>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <input id="quick-amount" type="number" value="100.00" class="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold">
+                                <button onclick="triggerQuickTransfer()" class="px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl flex items-center gap-2"><i class="fa-solid fa-paper-plane"></i> Send</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <h4 class="font-bold text-slate-900">Monthly Budget Overview</h4>
+                        <div class="grid grid-cols-4 gap-2 text-center" id="dash-budget-overview-container">
+                            </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-transactions" class="hidden space-y-6 ready-view">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <button onclick="openModal('modal-transaction')" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl flex items-center gap-2 shadow-sm shadow-indigo-100"><i class="fa-solid fa-plus"></i> ADD TRANSACTION</button>
+                        <select id="filter-category" onchange="renderTransactionsTable()" class="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium"><option value="All">All Categories</option></select>
+                    </div>
+                    <button onclick="exportToCSV()" class="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl flex items-center gap-2"><i class="fa-solid fa-file-export"></i> EXPORT</button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/70 border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                    <th class="px-6 py-4">Date</th><th class="px-6 py-4">Description</th><th class="px-6 py-4">Category</th><th class="px-6 py-4">Amount</th><th class="px-6 py-4">Status</th><th class="px-6 py-4">Account</th><th class="px-6 py-4 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-rows" class="divide-y divide-slate-100 text-sm font-medium text-slate-600">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 text-xl"><i class="fa-solid fa-wallet"></i></div>
+                        <div><span class="text-xs text-slate-400 font-semibold block">Total Income</span><h4 id="tx-total-income" class="text-xl font-bold text-slate-900">$0.00</h4></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center text-rose-600 text-xl"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                        <div><span class="text-xs text-slate-400 font-semibold block">Total Expenses</span><h4 id="tx-total-expenses" class="text-xl font-bold text-slate-900">$0.00</h4></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 text-xl"><i class="fa-solid fa-piggy-bank"></i></div>
+                        <div><span class="text-xs text-slate-400 font-semibold block">Net Savings</span><h4 id="tx-net-savings" class="text-xl font-bold text-slate-900">$0.00</h4></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-budgets" class="hidden space-y-8 ready-view">
+                <div class="flex justify-between items-center">
+                    <div class="flex gap-3">
+                        <button onclick="openModal('modal-budget')" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-sm"><i class="fa-solid fa-plus"></i> Create New Budget</button>
+                        <select class="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium"><option>Select Month</option></select>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 bg-slate-50/50 border-b border-slate-100"><h4 class="font-bold text-slate-900">Overview Summary</h4></div>
+                    <div class="divide-y divide-slate-100 text-sm font-medium">
+                        <div class="px-6 py-4 grid grid-cols-3 text-xs text-slate-400 uppercase tracking-wider bg-slate-50/20"><div>Title</div><div>Value</div><div>Subtext</div></div>
+                        <div class="px-6 py-4 grid grid-cols-3"><div>Total Budget</div><div id="budget-summary-total" class="font-bold text-slate-900">$0.00</div><div class="text-slate-400">Across all categories</div></div>
+                        <div class="px-6 py-4 grid grid-cols-3"><div>Spent so far</div><div id="budget-summary-spent" class="font-bold text-slate-900">$0.00</div><div id="budget-summary-pct" class="text-slate-500">0% of monthly budget</div></div>
+                        <div class="px-6 py-4 grid grid-cols-3"><div>Remaining</div><div id="budget-summary-rem" class="font-bold text-emerald-600">$0.00</div><div class="text-emerald-600">On Track</div></div>
+                        <div class="px-6 py-4 grid grid-cols-3"><div>Over-spent</div><div id="budget-summary-over" class="font-bold text-rose-600">0 categories</div><div id="budget-summary-over-names" class="text-slate-400">None</div></div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-6">Budget Breakdown by Category</h3>
+                    <div id="budget-cards-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        </div>
+                </div>
+            </section>
+
+            <section id="view-reports" class="hidden space-y-8 ready-view">
+                <div class="flex justify-between items-center">
+                    <div class="flex gap-4 items-center">
+                        <input type="text" placeholder="Search by merchant..." class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm">
+                        <input type="date" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm">
+                    </div>
+                    <button onclick="window.print()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl flex items-center gap-2"><i class="fa-solid fa-download"></i> EXPORT REPORT</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-slate-900">Income vs Expenses</h4>
+                            <div class="flex gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                                <button class="px-3 py-1.5 rounded-lg text-slate-500">Last 3 months</button>
+                                <button class="px-3 py-1.5 rounded-lg text-slate-500">Last 6 months</button>
+                                <button class="px-3 py-1.5 rounded-lg bg-white text-slate-800 shadow-sm">This Year</button>
+                            </div>
+                        </div>
+                        <div class="h-64"><canvas id="chartReportsBar"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                        <h4 class="font-bold text-slate-900 mb-2">Where Your Money Went</h4>
+                        <div class="h-44 w-44 mx-auto relative flex items-center justify-center">
+                            <canvas id="chartReportsDonut"></canvas>
+                        </div>
+                        <div id="reports-donut-legend" class="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-500 mt-4">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 class="font-bold text-slate-900 mb-4">Monthly Financial Trend</h4>
+                        <div class="h-64"><canvas id="chartReportsLine"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <h4 class="font-bold text-slate-900">Budget vs Actuals</h4>
+                        <div class="space-y-4" id="reports-budget-vs-actuals-list">
+                            </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-ai-insights" class="hidden space-y-8 ready-view">
+                <div class="bg-gradient-to-r from-indigo-600 to-violet-700 p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                    <div class="absolute right-0 bottom-0 top-0 w-1/3 opacity-10 flex items-center justify-center text-[10rem]"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <div class="max-w-xl relative z-10 space-y-3">
+                        <span class="bg-white/20 text-white font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">AI Powered Engine</span>
+                        <h2 class="text-3xl font-bold tracking-tight">Smart Financial Intelligence</h2>
+                        <p class="text-indigo-100/90 text-sm leading-relaxed">WealthWise AI analyzes your spending graph across multi-dimensional parameters to isolate unnecessary burn rates and boost your operational investment ceiling.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                        <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 text-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <h4 class="font-bold text-slate-900">Anomaly Spike Flagged</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">Your subscription tier overhead increased by 14.2% over historical quarterly medians due to stacked overlapping trials.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                        <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 text-lg"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                        <h4 class="font-bold text-slate-900">Optimal Runway Strategy</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">Reallocating 15% of the remaining unspent Dining buffers into high-yield assets would unlock an additional $340 liquidity annually.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                        <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 text-lg"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h4 class="font-bold text-slate-900">Security Limit Status</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">All active transaction endpoints conform to local regulatory ledger criteria. Risk index stands at a minimal 0.02%.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4 flex flex-col h-80">
+                    <h4 class="font-bold text-slate-900"><i class="fa-solid fa-comments text-indigo-500"></i> Query WealthWise Core Engine</h4>
+                    <div id="ai-chat-box" class="flex-1 overflow-y-auto space-y-3 p-2 bg-slate-50 rounded-xl text-xs">
+                        <div class="flex gap-2 items-start"><div class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px]">AI</div><div class="bg-white p-3 rounded-2xl border border-slate-200 max-w-md font-medium">Hello! I am parsing your transaction ledger. Ask me to cross-verify anything.</div></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="ai-input" type="text" placeholder="Ask AI: e.g., How can I save more this month?" class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500">
+                        <button onclick="triggerAIChat()" class="px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl">Inquire</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <div id="modal-transaction" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+        <div class="bg-white w-full max-w-md p-6 rounded-3xl shadow-xl space-y-4">
+            <div class="flex justify-between items-center"><h3 class="font-bold text-slate-900 text-lg">Add New Entry</h3><button onclick="closeModal('modal-transaction')" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="space-y-3 text-xs font-semibold text-slate-500">
+                <div><label class="block mb-1">Description</label><input id="form-tx-desc" type="text" placeholder="e.g., AWS Cloud Bill" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block mb-1">Category</label><select id="form-tx-cat" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"></select></div>
+                    <div><label class="block mb-1">Amount ($)</label><input id="form-tx-amt" type="number" step="0.01" placeholder="e.g., 45.00" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block mb-1">Type</label><select id="form-tx-type" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"><option value="Expense">Expense</option><option value="Income">Income</option></select></div>
+                    <div><label class="block mb-1">Account</label><select id="form-tx-acc" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"><option>Checking ****1234</option><option>Credit ****4421</option></select></div>
+                </div>
+            </div>
+            <button onclick="submitTransactionForm()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl">Commit Entry</button>
+        </div>
+    </div>
+
+    <div id="modal-budget" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white w-full max-w-md p-6 rounded-3xl shadow-xl space-y-4">
+            <div class="flex justify-between items-center"><h3 class="font-bold text-slate-900 text-lg">Allocate Budget Limit</h3><button onclick="closeModal('modal-budget')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="space-y-3 text-xs font-semibold text-slate-500">
+                <div><label class="block mb-1">New or Existing Category Name</label><input id="form-bg-name" type="text" placeholder="e.g., Logistics" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                <div><label class="block mb-1">Limit Allocation ($)</label><input id="form-bg-lim" type="number" placeholder="e.g., 250" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+            </div>
+            <button onclick="submitBudgetForm()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl">Deploy Limitation</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. GLOBAL CENTRAL ENGINE STATE ---
+        let appState = {
+            transactions: [
+                { id: 1, date: 'Apr 20', desc: 'Starbucks Coffee', cat: 'Dining', amt: -4.75, status: 'Cleared', acc: 'Checking ****1234' },
+                { id: 2, date: 'Apr 19', desc: 'Uber Ride', cat: 'Transport', amt: -12.00, status: 'Cleared', acc: 'Credit ****4421' },
+                { id: 3, date: 'Apr 18', desc: 'Netflix Subscription', cat: 'Subscriptions', amt: -15.99, status: 'Pending', acc: 'Checking ****1234' },
+                { id: 4, date: 'Apr 17', desc: 'Paycheck', cat: 'Income', amt: 2100.00, status: 'Cleared', acc: 'Credit ****4421' },
+                { id: 5, date: 'Apr 17', desc: 'Electricity Bill', cat: 'Utilities', amt: -65.00, status: 'Cleared', acc: 'Credit ****4421' },
+                { id: 6, date: 'Apr 17', desc: 'Apple Store', cat: 'Shopping', amt: -89.99, status: 'Cleared', acc: 'Checking ****1234' },
+                { id: 7, date: 'Apr 16', desc: 'Grocery Mart', cat: 'Groceries', amt: -72.10, status: 'Cleared', acc: 'Checking ****1234' }
+            ],
+            budgets: {
+                'Groceries': { budgeted: 500, spent: 420.25 },
+                'Dining': { budgeted: 300, spent: 340.00 },
+                'Transport': { budgeted: 200, spent: 165.00 },
+                'Subscriptions': { budgeted: 150, spent: 160.00 },
+                'Utilities': { budgeted: 250, spent: 240.00 },
+                'Entertainment': { budgeted: 300, spent: 190.00 }
+            },
+            financialGoal: { target: 1000, saved: 750 }
+        };
+
+        // --- 2. GLOBAL SYSTEM CORE INTIALIZER ---
+        let charts = {};
+
+        document.addEventListener("DOMContentLoaded", function() {
+            populateCategoryDropdowns();
+            recalculateMetrics();
+            initializeGlobalCharts();
+        });
+
+        // --- 3. METRICS AGGREGATION CALCULATOR ENGINE ---
+        function recalculateMetrics() {
+            let totalIncome = 0;
+            let totalExpenses = 0;
+
+            // Process ledger totals
+            appState.transactions.forEach(t => {
+                if (t.cat === 'Income' || t.amt > 0) {
+                    totalIncome += Math.abs(t.amt);
+                } else {
+                    totalExpenses += Math.abs(t.amt);
+                    // Dynamically map expense transaction accumulations to budget spent trackers
+                    if (appState.budgets[t.cat]) {
+                        // Prevent recalculation multiplier issues by resetting/mapping accurately if needed
+                    }
+                }
+            });
+
+            // Hardcoded structural base metrics tracking offsets matching mockups
+            let netWorth = 12540.50 + (totalIncome - 2100.00) - (totalExpenses - 259.83);
+            let netSavings = totalIncome - totalExpenses;
+
+            // Render Dashboard DOM Elements
+            document.getElementById('dash-networth').innerText = `$${netWorth.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            document.getElementById('dash-income').innerText = `$${totalIncome.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            document.getElementById('dash-expenses').innerText = `$${totalExpenses.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            
+            // Calculate Global Budget Status parameters
+            let combinedBudget = 0;
+            let combinedSpent = 0;
+            let overSpentCategoriesCount = 0;
+            let overSpentNames = [];
+
+            for (let cat in appState.budgets) {
+                combinedBudget += appState.budgets[cat].budgeted;
+                combinedSpent += appState.budgets[cat].spent;
+                if (appState.budgets[cat].spent > appState.budgets[cat].budgeted) {
+                    overSpentCategoriesCount++;
+                    overSpentNames.push(cat);
+                }
+            }
+
+            let budgetPctUsed = combinedBudget > 0 ? Math.round((combinedSpent / combinedBudget) * 100) : 0;
+            let budgetRemaining = Math.max(combinedBudget - combinedSpent, 0);
+
+            document.getElementById('dash-budgetstatus').innerText = `${budgetPctUsed}% Used`;
+            document.getElementById('dash-budgetrem').innerText = `$${budgetRemaining.toLocaleString()} remaining`;
+
+            // Render Transaction Ledger View components
+            document.getElementById('tx-total-income').innerText = `$${totalIncome.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+            document.getElementById('tx-total-expenses').innerText = `$${totalExpenses.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+            document.getElementById('tx-net-savings').innerText = `$${netSavings.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+
+            // Render Budget View Summary Table parameters
+            document.getElementById('budget-summary-total').innerText = `$${combinedBudget.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+            document.getElementById('budget-summary-spent').innerText = `$${combinedSpent.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+            document.getElementById('budget-summary-pct').innerText = `${budgetPctUsed}% of monthly budget`;
+            document.getElementById('budget-summary-rem').innerText = `$${budgetRemaining.toLocaleString('en-US', {minimumFractionDigits:2})}`;
+            document.getElementById('budget-summary-over').innerText = `${overSpentCategoriesCount} categories`;
+            document.getElementById('budget-summary-over-names').innerText = overSpentNames.length > 0 ? overSpentNames.join(', ') : 'None';
+
+            // Re-render variable layout structures
+            renderDashboardBudgetOverview(budgetPctUsed);
+            renderTransactionsTable();
+            renderBudgetCards();
+            renderReportsWidgetData();
+            updateChartEngines(combinedSpent, budgetPctUsed);
+        }
+
+        // --- 4. RENDERERS & DATA VIEWS POPULATORS ---
+        function switchView(viewId) {
+            document.getElementById('page-title').innerText = viewId;
+            
+            // Toggle Section Blocks
+            const targets = ['dashboard', 'transactions', 'budgets', 'reports', 'ai-insights'];
+            targets.forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`menu-${t}`).classList.remove('sidebar-active');
+            });
+
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            document.getElementById(`menu-${viewId}`).classList.add('sidebar-active');
+        }
+
+        function populateCategoryDropdowns() {
+            const categories = ['Dining', 'Transport', 'Subscriptions', 'Utilities', 'Entertainment', 'Groceries', 'Shopping', 'Income'];
+            const txFilter = document.getElementById('filter-category');
+            const txFormCat = document.getElementById('form-tx-cat');
+
+            categories.forEach(c => {
+                let opt1 = document.createElement('option'); opt1.value = c; opt1.innerText = c;
+                let opt2 = document.createElement('option'); opt2.value = c; opt2.innerText = c;
+                txFilter.appendChild(opt1);
+                txFormCat.appendChild(opt2);
+            });
+        }
+
+        function renderTransactionsTable() {
+            const tbody = document.getElementById('transaction-rows');
+            const filterValue = document.getElementById('filter-category').value;
+            tbody.innerHTML = '';
+
+            appState.transactions.forEach(t => {
+                if (filterValue !== 'All' && t.cat !== filterValue) return;
+
+                const isExpense = t.amt < 0;
+                const amtClass = isExpense ? 'text-slate-900' : 'text-emerald-600';
+                const amtString = isExpense ? `-$${Math.abs(t.amt).toFixed(2)}` : `+$${t.amt.toFixed(2)}`;
+                const statusBg = t.status === 'Cleared' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700';
+
+                let row = `
+                    <tr class="hover:bg-slate-50/50 transition-all">
+                        <td class="px-6 py-4 text-slate-400 font-normal">${t.date}</td>
+                        <td class="px-6 py-4 text-slate-900">${t.desc}</td>
+                        <td class="px-6 py-4"><span class="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-semibold text-slate-500">${t.cat}</span></td>
+                        <td class="px-6 py-4 font-bold ${amtClass}">${amtString}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${statusBg}"><i class="fa-solid ${t.status==='Cleared'?'fa-circle-check':'fa-clock'} text-[9px]"></i> ${t.status}</span></td>
+                        <td class="px-6 py-4 text-slate-400 font-normal">${t.acc}</td>
+                        <td class="px-6 py-4 text-center"><button onclick="deleteTransaction(${t.id})" class="text-slate-300 hover:text-rose-500 transition-all"><i class="fa-regular fa-trash-can"></i></button></td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function renderBudgetCards() {
+            const grid = document.getElementById('budget-cards-grid');
+            grid.innerHTML = '';
+
+            for (let cat in appState.budgets) {
+                let item = appState.budgets[cat];
+                let pct = item.budgeted > 0 ? Math.round((item.spent / item.budgeted) * 100) : 0;
+                let remaining = item.budgeted - item.spent;
+                
+                let isOver = pct >= 100;
+                let borderClass = isOver ? 'border-l-4 border-l-rose-500' : '';
+                let progressColor = isOver ? 'bg-rose-500' : 'bg-indigo-600';
+                let remainingColor = remaining < 0 ? 'text-rose-600' : 'text-emerald-600';
+                let remainingLabel = remaining < 0 ? `-$${Math.abs(remaining).toFixed(2)}` : `$${remaining.toFixed(2)}`;
+
+                let card = `
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 ${borderClass}">
+                        <div class="flex justify-between items-center"><h4 class="font-bold text-slate-900">${cat}</h4><div class="flex gap-2 text-slate-300 text-sm"><button onclick="deleteBudgetCategory('${cat}')" class="hover:text-rose-500"><i class="fa-regular fa-trash-can"></i></button></div></div>
+                        <div class="grid grid-cols-3 gap-2 text-center py-2 bg-slate-50 rounded-xl">
+                            <div><span class="text-[10px] uppercase font-bold text-slate-400 block">Budgeted</span><span class="text-xs font-bold text-slate-800">$${item.budgeted}</span></div>
+                            <div><span class="text-[10px] uppercase font-bold text-slate-400 block">Spent</span><span class="text-xs font-bold text-slate-800">$${item.spent.toFixed(2)}</span></div>
+                            <div><span class="text-[10px] uppercase font-bold text-slate-400 block">Remaining</span><span class="text-xs font-bold ${remainingColor}">${remainingLabel}</span></div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden"><div class="${progressColor} h-full rounded-full" style="width: ${Math.min(pct, 100)}%"></div></div>
+                            <div class="flex ${isOver?'justify-between':'justify-end'} items-center">
+                                ${isOver?'<span class="text-[10px] text-rose-500 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Over budget</span>':''}
+                                <span class="text-xs font-bold text-slate-400">${pct}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            }
+        }
+
+        function renderDashboardBudgetOverview(globalPct) {
+            const container = document.getElementById('dash-budget-overview-container');
+            container.innerHTML = '';
+            
+            // Loop slice 4 categories dynamically for dashboard preview panel
+            let count = 0;
+            for (let cat in appState.budgets) {
+                if (count >= 4) break;
+                let item = appState.budgets[cat];
+                let pct = Math.round((item.spent / item.budgeted) * 100);
+                
+                let block = `
+                    <div class="space-y-1">
+                        <span class="text-[11px] font-semibold text-slate-400 block truncate">${cat}</span>
+                        <span class="text-xs font-bold text-slate-800 block">$${Math.round(item.spent)} / $${item.budgeted}</span>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden"><div class="bg-indigo-600 h-full rounded-full" style="width: ${Math.min(pct, 100)}%"></div></div>
+                        <span class="text-xs font-semibold text-slate-500">${pct}%</span>
+                    </div>
+                `;
+                container.innerHTML += block;
+                count++;
+            }
+        }
+
+        function renderReportsWidgetData() {
+            const list = document.getElementById('reports-budget-vs-actuals-list');
+            const donutLegend = document.getElementById('reports-donut-legend');
+            list.innerHTML = '';
+            donutLegend.innerHTML = '';
+
+            let categories = ['Dining', 'Utilities', 'Entertainment', 'Groceries', 'Transport', 'Subscriptions'];
+            categories.forEach(cat => {
+                let item = appState.budgets[cat];
+                if (!item) return;
+                
+                let pct = Math.round((item.spent / item.budgeted) * 100);
+                let isOver = pct > 100;
+                let statusText = isOver ? 'Over' : (pct > 85 ? 'Near Limit' : 'On Track');
+                let statusClass = isOver ? 'text-rose-500 bg-rose-50' : (pct > 85 ? 'text-amber-500 bg-amber-50' : 'text-emerald-500 bg-emerald-50');
+
+                let row = `
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between items-center text-slate-900 font-bold">
+                            <span>${cat}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-400 font-medium">
+                            <span>Budgeted: $${item.budgeted}</span>
+                            <span class="text-slate-800 font-bold">Spent: $${item.spent.toFixed(0)} (${pct}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden"><div class="${isOver?'bg-rose-500':'bg-indigo-600'} h-full" style="width: ${Math.min(pct, 100)}%"></div></div>
+                    </div>
+                `;
+                list.innerHTML += row;
+
+                // Legend builder
+                let dot = `
+                    <div class="flex items-center justify-between px-2 py-1 bg-slate-50 rounded-lg">
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> ${cat}</span>
+                        <span class="font-bold text-slate-900">$${item.spent.toFixed(0)}</span>
+                    </div>
+                `;
+                donutLegend.innerHTML += dot;
+            });
+        }
+
+        // --- 5. DATA MODAL INTERACTIVE POPUPS CONTROLLERS ---
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function submitTransactionForm() {
+            const desc = document.getElementById('form-tx-desc').value;
+            const cat = document.getElementById('form-tx-cat').value;
+            const amt = parseFloat(document.getElementById('form-tx-amt').value);
+            const type = document.getElementById('form-tx-type').value;
+            const acc = document.getElementById('form-tx-acc').value;
+
+            if (!desc || isNaN(amt) || amt <= 0) {
+                alert('⚠️ Please populate entry details with positive structural limits.');
+                return;
+            }
+
+            let computedAmt = type === 'Expense' ? -amt : amt;
+
+            // Mutation sequence
+            appState.transactions.unshift({
+                id: Date.now(),
+                date: 'Apr 21',
+                desc: desc,
+                cat: cat,
+                amt: computedAmt,
+                status: 'Cleared',
+                acc: acc
+            });
+
+            // If entry is an expense, compound values automatically inside budget layer counters
+            if (type === 'Expense' && appState.budgets[cat]) {
+                appState.budgets[cat].spent += amt;
+            }
+
+            closeModal('modal-transaction');
+            recalculateMetrics();
+            
+            // Clean values out of input fields
+            document.getElementById('form-tx-desc').value = '';
+            document.getElementById('form-tx-amt').value = '';
+        }
+
+        function submitBudgetForm() {
+            const name = document.getElementById('form-bg-name').value;
+            const limit = parseFloat(document.getElementById('form-bg-lim').value);
+
+            if (!name || isNaN(limit) || limit <= 0) {
+                alert('⚠️ Provide valid category allocations.');
+                return;
+            }
+
+            appState.budgets[name] = { budgeted: limit, spent: 0 };
+            closeModal('modal-budget');
+            populateCategoryDropdowns();
+            recalculateMetrics();
+            
+            document.getElementById('form-bg-name').value = '';
+            document.getElementById('form-bg-lim').value = '';
+        }
+
+        function deleteTransaction(id) {
+            let item = appState.transactions.find(t => t.id === id);
+            if (item && item.amt < 0 && appState.budgets[item.cat]) {
+                appState.budgets[item.cat].spent -= Math.abs(item.amt);
+            }
+            appState.transactions = appState.transactions.filter(t => t.id !== id);
+            recalculateMetrics();
+        }
+
+        function deleteBudgetCategory(cat) {
+            delete appState.budgets[cat];
+            recalculateMetrics();
+        }
+
+        function triggerQuickTransfer() {
+            const val = parseFloat(document.getElementById('quick-amount').value);
+            if (isNaN(val) || val <= 0) { alert('⚠️ Enter valid balance transfer specifications.'); return; }
+            
+            appState.transactions.unshift({
+                id: Date.now(),
+                date: 'Apr 21',
+                desc: 'Internal Asset Transfer Allocation',
+                cat: 'Transport',
+                amt: -val,
+                status: 'Cleared',
+                acc: 'Checking ****1234'
+            });
+
+            recalculateMetrics();
+            alert(`✅ Structural Transfer Sequence Complete. $${val.toFixed(2)} moved to operational asset indexes.`);
+        }
+
+        function handleGlobalSearch() {
+            const query = document.getElementById('global-search').value.toLowerCase();
+            switchView('transactions');
+            const tbody = document.getElementById('transaction-rows');
+            const rows = tbody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                let text = rows[i].innerText.toLowerCase();
+                rows[i].style.display = text.includes(query) ? '' : 'none';
+            }
+        }
+
+        function exportToCSV() {
+            let csv = 'Date,Description,Category,Amount,Status,Account\n';
+            appState.transactions.forEach(t => {
+                csv += `"${t.date}","${t.desc}","${t.cat}","${t.amt}","${t.status}","${t.acc}"\n`;
+            });
+            let blob = new Blob([csv], { type: 'text/csv' });
+            let el = document.createElement('a');
+            el.href = URL.createObjectURL(blob);
+            el.download = 'wealthwise_ledger_export.csv';
+            el.click();
+        }
+
+        function triggerAIChat() {
+            const input = document.getElementById('ai-input');
+            const txt = input.value.trim();
+            if(!txt) return;
+
+            const box = document.getElementById('ai-chat-box');
+            box.innerHTML += `<div class="flex justify-end"><div class="bg-indigo-600 text-white p-3 rounded-2xl max-w-md font-medium text-right">${txt}</div></div>`;
+            
+            // Intelligence mockup loop engine
+            setTimeout(() => {
+                box.innerHTML += `<div class="flex gap-2 items-start"><div class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px]">AI</div><div class="bg-white p-3 rounded-2xl border border-slate-200 max-w-md font-medium">Understood. Reviewing active core structures... I advise reduction thresholds over Dining categories to capture optimal yield run rates.</div></div>`;
+                box.scrollTop = box.scrollHeight;
+            }, 750);
+
+            input.value = '';
+        }
+
+        // --- 6. CHARTS INITIALIZATION LAYER ENGINES ---
+        function initializeGlobalCharts() {
+            // Dashboard Bar Graph Configuration
+            charts.dashBar = new Chart(document.getElementById('chartDashBar').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        { label: 'Income', data: [4500, 4400, 3900, 4200, 3800, 3200, 4100, 4800, 4500, 2000, 4100, 4000], backgroundColor: '#4F46E5', borderRadius: 4, barPercentage:0.5 },
+                        { label: 'Expenses', data: [2800, 3100, 2500, 3400, 2900, 1550, 3200, 3900, 3800, 3500, 2800, 3700], backgroundColor: '#FB923C', borderRadius: 4, barPercentage:0.5 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Dashboard Radial Progress Goal Ring
+            charts.dashDonut = new Chart(document.getElementById('chartDashDonut').getContext('2d'), {
+                type: 'doughnut',
+                data: { datasets: [{ data: [75, 25], backgroundColor: ['#6366F1', '#EEF2FF'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '85%', plugins: { tooltip: { enabled: false } } }
+            });
+
+            // Reports Module Sync Bar Chart
+            charts.repBar = new Chart(document.getElementById('chartReportsBar').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        { label: 'Income', data: [4500, 4400, 3900, 4200, 3800, 3200, 4100, 4800, 4500, 2000, 4100, 4000], backgroundColor: '#4F46E5', borderRadius: 4 },
+                        { label: 'Expenses', data: [2800, 3100, 2500, 3400, 2900, 1550, 3200, 3900, 3800, 3500, 2800, 3700], backgroundColor: '#E2E8F0', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Reports Breakdown Donut Graphic
+            charts.repDonut = new Chart(document.getElementById('chartReportsDonut').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Groceries', 'Dining', 'Entertainment', 'Transport', 'Utilities', 'Subscriptions'],
+                    datasets: [{ data: [420, 340, 190, 165, 240, 160], backgroundColor: ['#4F46E5', '#FB923C', '#10B981', '#38BDF8', '#A855F7', '#F43F5E'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Reports Trend Line Mapping Component
+            charts.repLine = new Chart(document.getElementById('chartReportsLine').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        { label: 'Income', data: [2000, 3300, 1800, 3800, 3000, 5000], borderColor: '#4F46E5', tension: 0.4 },
+                        { label: 'Expenses', data: [1000, 2200, 1500, 4500, 3600, 4000], borderColor: '#FB923C', tension: 0.4 },
+                        { label: 'Saving', data: [800, 1200, 900, 3500, 2900, 3200], borderColor: '#10B981', tension: 0.4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function updateChartEngines(spent, globalPct) {
+            if(!charts.dashDonut) return;
+            // Mutate data layers conditionally
+            charts.dashDonut.data.datasets[0].data = [globalPct, Math.max(100 - globalPct, 0)];
+            charts.dashDonut.update();
+        }
+    </script>
+</body>
+</html>
