@@ -1,0 +1,4 @@
+vendor/
+public_html/vikala_core/vendor/
+.env
+public_html/vikala_core/.env
