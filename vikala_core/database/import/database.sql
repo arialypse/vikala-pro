@@ -37,7 +37,7 @@ CREATE TABLE `users` (
 
 -- แทรกข้อมูลบัญชี Admin เริ่มต้น (Username: admin / Password: password123)
 INSERT INTO `users` (`username`, `password_hash`, `fullname`, `email`, `role`) VALUES
-('admin', '$2y$10$xIq.4xI2JtB3L99O3J8C.u9hG7k34G62.8T2G77b6Y162x6G94zE.', 'System Administrator', 'admin@vikalapro.com', 'Admin');
+('admin', '$2y$10$xIq.4xI2JtB3L99O3J8C.u9hG7k34G62.8T2G77b6Y162x6G94zE.', 'System Administrator', 'admin@in.mg', 'Admin');
 
 -- 3. ตารางสำหรับผูกสิทธิ์สัญญาระหว่างผู้ใช้งานกับสิทธิ์เข้าถึงแต่ละบริษัท
 CREATE TABLE `user_company_access` (
