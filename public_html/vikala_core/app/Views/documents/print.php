@@ -52,21 +52,21 @@
             <td width="60%">
                 <div class="header-title"><?= esc($company['name']) ?></div>
                 <div><?= esc($company['address']) ?></div>
-                <div>??????????????????????: <?= esc($company['tax_id']) ?> ????: <?= esc($company['branch_code'] ?? '00000') ?></div>
+                <div>เลขประจำตัวผู้เสียภาษี: <?= esc($company['tax_id']) ?> สาขา: <?= esc($company['branch_code'] ?? '00000') ?></div>
             </td>
             <td width="40%" class="text-right">
                 <div class="header-title">
                     <?php
-                        if ($document['document_type'] === 'Invoice') echo '??????????';
-                        elseif ($document['document_type'] === 'Receipt') echo '??????????????';
-                        elseif ($document['document_type'] === 'TaxInvoice') echo '??????????? / ??????????????';
-                        else echo '??????';
+                        if ($document['document_type'] === 'Invoice') echo 'ใบแจ้งหนี้';
+                        elseif ($document['document_type'] === 'Receipt') echo 'ใบเสร็จรับเงิน';
+                        elseif ($document['document_type'] === 'TaxInvoice') echo 'ใบกำกับภาษี / ใบเสร็จรับเงิน';
+                        else echo 'เอกสาร';
                     ?>
                 </div>
-                <div>????????????: <span class="font-bold"><?= esc($document['document_number']) ?></span></div>
-                <div>??????: <?= esc(date('d/m/Y', strtotime($document['created_date']))) ?></div>
+                <div>เลขที่เอกสาร: <span class="font-bold"><?= esc($document['document_number']) ?></span></div>
+                <div>วันที่: <?= esc(date('d/m/Y', strtotime($document['created_date']))) ?></div>
                 <?php if(!empty($document['reference_number'])): ?>
-                    <div>???????: <?= esc($document['reference_number']) ?></div>
+                    <div>อ้างอิง: <?= esc($document['reference_number']) ?></div>
                 <?php endif; ?>
             </td>
         </tr>
@@ -78,10 +78,10 @@
     <table>
         <tr>
             <td class="border-all">
-                <div class="font-bold">?????? / Customer:</div>
+                <div class="font-bold">ลูกค้า / Customer:</div>
                 <div><?= esc($document['customer_name']) ?></div>
                 <div><?= esc($document['customer_address']) ?></div>
-                <div>??????????????????????: <?= esc($document['customer_tax_id']) ?> ????: <?= esc($document['customer_branch']) ?></div>
+                <div>เลขประจำตัวผู้เสียภาษี: <?= esc($document['customer_tax_id']) ?> สาขา: <?= esc($document['customer_branch']) ?></div>
             </td>
         </tr>
     </table>
@@ -92,11 +92,11 @@
     <table class="item-table">
         <thead>
             <tr>
-                <th width="5%" class="text-center">?????</th>
-                <th width="45%" class="text-left">?????? / Description</th>
-                <th width="15%" class="text-center">?????</th>
-                <th width="15%" class="text-right">????????????</th>
-                <th width="20%" class="text-right">?????????</th>
+                <th width="5%" class="text-center">ลำดับ</th>
+                <th width="45%" class="text-left">รายการ / Description</th>
+                <th width="15%" class="text-center">จำนวน</th>
+                <th width="15%" class="text-right">ราคาต่อหน่วย</th>
+                <th width="20%" class="text-right">จำนวนเงิน</th>
             </tr>
         </thead>
         <tbody>
@@ -117,7 +117,7 @@
             else:
             ?>
             <tr>
-                <td colspan="5" class="text-center">?????????????????</td>
+                <td colspan="5" class="text-center">ไม่มีรายการสินค้า</td>
             </tr>
             <?php endif; ?>
         </tbody>
@@ -130,42 +130,42 @@
         <tr>
             <td width="60%" valign="top">
                 <?php if(isset($company['show_remarks']) && $company['show_remarks'] == 1): ?>
-                    <div class="font-bold border-bottom" style="width:100px;">????????</div>
+                    <div class="font-bold border-bottom" style="width:100px;">หมายเหตุ</div>
                     <div style="font-size:14pt; margin-top:5px;">
-                        - ??????????????????? ??????????????????????????????????????????????????<br>
-                        - ??????????????? ????????????????? 7 ???
+                        - การชำระเงินด้วยเช็ค จะสมบูรณ์เมื่อบริษัทได้รับเงินตามเช็คเรียบร้อยแล้ว<br>
+                        - หากมีข้อผิดพลาด โปรดแจ้งกลับภายใน 7 วัน
                     </div>
                 <?php endif; ?>
             </td>
             <td width="40%">
                 <table class="item-table">
                     <tr>
-                        <td class="text-right font-bold" width="60%">???????????:</td>
+                        <td class="text-right font-bold" width="60%">รวมเป็นเงิน:</td>
                         <td class="text-right" width="40%"><?= number_format($document['total_amount'], 2) ?></td>
                     </tr>
                     <?php if($document['discount_amount'] > 0): ?>
                     <tr>
-                        <td class="text-right font-bold">??????:</td>
+                        <td class="text-right font-bold">ส่วนลด:</td>
                         <td class="text-right"><?= number_format($document['discount_amount'], 2) ?></td>
                     </tr>
                     <?php endif; ?>
                     <?php if($document['vat_amount'] > 0): ?>
                     <tr>
-                        <td class="text-right font-bold">??????????????? (<?= number_format($document['vat_rate'], 0) ?>%):</td>
+                        <td class="text-right font-bold">ภาษีมูลค่าเพิ่ม (<?= number_format($document['vat_rate'], 0) ?>%):</td>
                         <td class="text-right"><?= number_format($document['vat_amount'], 2) ?></td>
                     </tr>
                     <?php endif; ?>
                     <tr>
-                        <td class="text-right font-bold">????????????:</td>
+                        <td class="text-right font-bold">ยอดเงินสุทธิ:</td>
                         <td class="text-right font-bold"><?= number_format($document['net_amount'], 2) ?></td>
                     </tr>
                     <?php if($document['wht_amount'] > 0): ?>
                     <tr>
-                        <td class="text-right font-bold">??? ? ??????? (<?= number_format($document['wht_percentage'], 0) ?>%):</td>
+                        <td class="text-right font-bold">หัก ณ ที่จ่าย (<?= number_format($document['wht_percentage'], 0) ?>%):</td>
                         <td class="text-right"><?= number_format($document['wht_amount'], 2) ?></td>
                     </tr>
                     <tr>
-                        <td class="text-right font-bold">????????????:</td>
+                        <td class="text-right font-bold">ยอดชำระสุทธิ:</td>
                         <td class="text-right font-bold"><?= number_format($document['net_amount'] - $document['wht_amount'], 2) ?></td>
                     </tr>
                     <?php endif; ?>
@@ -184,14 +184,14 @@
             <td width="50%" class="text-center">
                 <br><br>
                 ___________________________________<br>
-                ???????????? / ????????????<br>
-                ??????: _____/_____/_______
+                ผู้รับสินค้า / ผู้รับบริการ<br>
+                วันที่: _____/_____/_______
             </td>
             <td width="50%" class="text-center">
                 <br><br>
                 ___________________________________<br>
-                ??????????????? / ??????????<br>
-                ??????: _____/_____/_______
+                ผู้มีอำนาจลงนาม / ผู้รับเงิน<br>
+                วันที่: _____/_____/_______
             </td>
         </tr>
     </table>

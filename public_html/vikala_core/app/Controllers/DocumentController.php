@@ -22,7 +22,7 @@ class DocumentController extends BaseController
     {
         $companyId = session()->get('active_company_id');
         if (!$companyId) {
-            return redirect()->to('/dashboard')->with('error', '????????????????????????????????');
+            return redirect()->to('/dashboard')->with('error', 'กรุณาเลือกบริษัทก่อนจัดการเอกสาร');
         }
 
         $data['documents'] = $this->documentModel->where('company_id', $companyId)
@@ -35,7 +35,7 @@ class DocumentController extends BaseController
     {
         $companyId = session()->get('active_company_id');
         if (!$companyId) {
-            return redirect()->to('/dashboard')->with('error', '????????????????????????????????');
+            return redirect()->to('/dashboard')->with('error', 'กรุณาเลือกบริษัทก่อนจัดการเอกสาร');
         }
 
         return view('documents/create');
@@ -47,7 +47,7 @@ class DocumentController extends BaseController
         $userId = session()->get('user_id');
 
         if (!$companyId || !$userId) {
-            return redirect()->to('/dashboard')->with('error', '????????????????');
+            return redirect()->to('/dashboard')->with('error', 'เซสชันไม่สมบูรณ์');
         }
 
         // Validate basic rules
@@ -65,20 +65,20 @@ class DocumentController extends BaseController
         $customer = $this->customerModel->find($customerId);
 
         if (!$customer) {
-            return redirect()->back()->withInput()->with('error', '?????????????????');
+            return redirect()->back()->withInput()->with('error', 'ไม่พบข้อมูลลูกค้า');
         }
 
-        // 1. Snapshot ???????????? ? ????????????? (???????????????????????????????)
+        // 1. Snapshot ข้อมูลลูกค้า ณ เวลาที่ออกบิล (ล็อกข้อมูลไม่ให้เปลี่ยนย้อนหลัง)
         $customerName   = $customer['name'];
         $customerAddress= $customer['address'];
         $customerTaxId  = $customer['tax_id'];
         $customerBranch = $customer['branch_code'];
 
-        // 2. ????????????????????? Prefix (???????? companies)
+        // 2. ข้อมูลบริษัทสำหรับดึง Prefix (จากตาราง companies)
         $db = \Config\Database::connect();
         $company = $db->table('companies')->where('id', $companyId)->get()->getRowArray();
         if (!$company) {
-            return redirect()->back()->withInput()->with('error', '?????????????????');
+            return redirect()->back()->withInput()->with('error', 'ไม่พบข้อมูลบริษัท');
         }
 
         $docType = $this->request->getPost('document_type');
@@ -88,15 +88,15 @@ class DocumentController extends BaseController
         elseif ($docType == 'TaxInvoice') $prefix = $company['tax_invoice_prefix'];
         elseif ($docType == 'AbbrevInvoice') $prefix = $company['abbrev_prefix'];
 
-        // 3. ????? Database Transaction ???????????????????
+        // 3. เริ่ม Database Transaction สำหรับล็อกการรันเลข
         $db->transException(true);
         try {
             $db->transBegin();
 
-            // 4. ????????????????????? (Row Lock FOR UPDATE ???????????????????)
+            // 4. สร้างเลขที่เอกสารใหม่ (Row Lock FOR UPDATE ถูกใช้งานในเมธอดนี้)
             $documentNumber = $this->documentModel->generateNextDocumentNumber($companyId, $prefix);
 
-            // 5. ???????????? Header ??????
+            // 5. บันทึกข้อมูล Header เอกสาร
             $docData = [
                 'company_id'       => $companyId,
                 'user_id'          => $userId,
@@ -105,12 +105,12 @@ class DocumentController extends BaseController
                 'document_number'  => $documentNumber,
                 'reference_number' => $this->request->getPost('reference_number'),
                 'created_date'     => $this->request->getPost('created_date'),
-                // Data Snapshot ??????????????
+                // Data Snapshot ฝังลงบิลโดยตรง
                 'customer_name'    => $customerName,
                 'customer_address' => $customerAddress,
                 'customer_tax_id'  => $customerTaxId,
                 'customer_branch'  => $customerBranch,
-                // Money Data ???????????????????
+                // Money Data รองรับถึงพันล้านบาท
                 'total_amount'     => $this->request->getPost('total_amount') ?? 0,
                 'discount_amount'  => $this->request->getPost('discount_amount') ?? 0,
                 'vat_rate'         => $this->request->getPost('vat_rate') ?? 7.00,
@@ -124,7 +124,7 @@ class DocumentController extends BaseController
             $this->documentModel->insert($docData);
             $documentId = $this->documentModel->getInsertID();
 
-            // 6. ???????????? Items
+            // 6. บันทึกข้อมูล Items
             $items = $this->request->getPost('items');
             if (is_array($items) && !empty($items)) {
                 $itemsToInsert = [];
@@ -141,11 +141,11 @@ class DocumentController extends BaseController
             }
 
             $db->transCommit();
-            return redirect()->to('/documents')->with('success', '??????????? ' . $documentNumber . ' ??????');
+            return redirect()->to('/documents')->with('success', 'สร้างเอกสาร ' . $documentNumber . ' สำเร็จ');
 
         } catch (\Exception $e) {
             $db->transRollback();
-            return redirect()->back()->withInput()->with('error', '???????????????????????????????: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'เกิดข้อผิดพลาดในการบันทึกเอกสาร: ' . $e->getMessage());
         }
     }
 
@@ -153,16 +153,16 @@ class DocumentController extends BaseController
     {
         $companyId = session()->get('active_company_id');
         
-        // ?????????????????????????????????????????????
+        // เช็คสิทธิ์และตรวจสอบว่ามีเอกสารนี้จริงหรือไม่
         $document = $this->documentModel->find($id);
         if (!$document || $document['company_id'] != $companyId) {
-            return redirect()->to('/documents')->with('error', '??????????? ?????????????????????');
+            return redirect()->to('/documents')->with('error', 'ไม่พบเอกสาร หรือไม่มีสิทธิ์ยกเลิก');
         }
 
-        // ??????????????? Trash ????????
+        // อัปเดตสถานะเป็น Trash แทนการลบ
         $this->documentModel->update($id, ['status' => 'Trash']);
         
-        // ?????? Audit Log 
+        // บันทึก Audit Log 
         $db = \Config\Database::connect();
         $db->table('audit_logs')->insert([
             'user_id'    => session()->get('user_id'),
@@ -171,17 +171,17 @@ class DocumentController extends BaseController
             'ip_address' => $this->request->getIPAddress()
         ]);
 
-        return redirect()->to('/documents')->with('success', '?????????????????????????????????');
+        return redirect()->to('/documents')->with('success', 'ย้ายเอกสารเข้าถังขยะเรียบร้อยแล้ว');
     }
 
     public function print($id)
     {
         $companyId = session()->get('active_company_id');
         
-        // ??????????????????????????????????
+        // ตรวจสอบสิทธิ์ว่าอยู่บริษัทเดียวกัน
         $document = $this->documentModel->find($id);
         if (!$document || $document['company_id'] != $companyId) {
-            return redirect()->to('/documents')->with('error', '??????????? ??????????????????????');
+            return redirect()->to('/documents')->with('error', 'ไม่พบเอกสาร หรือไม่มีสิทธิ์เข้าถึง');
         }
 
         $items = $this->documentItemModel->where('document_id', $id)->findAll();
@@ -195,13 +195,13 @@ class DocumentController extends BaseController
             'company'  => $company
         ];
 
-        // ???????? print.php ???????????????
+        // โหลดหน้า print.php ลงในหน่วยความจำ
         $html = view('documents/print', $data);
 
-        // ??????? mPDF ??????????? HTML ???? PDF
-        // ????????: ???????????????? `composer require mpdf/mpdf` ?????????????????
+        // สั่งรัน mPDF และแปลงโค้ด HTML เป็น PDF
+        // หมายเหตุ: ต้องมั่นใจว่ารัน `composer require mpdf/mpdf` บนเซิร์ฟเวอร์แล้ว
         if (!class_exists('\Mpdf\Mpdf')) {
-            return redirect()->to('/documents')->with('error', '???????????? mPDF ???????? composer require mpdf/mpdf ?????????????????????');
+            return redirect()->to('/documents')->with('error', 'ไม่พบไลบรารี mPDF กรุณารัน composer require mpdf/mpdf หรือติดต่อผู้ดูแลระบบ');
         }
 
         $mpdf = new \Mpdf\Mpdf([
@@ -216,7 +216,7 @@ class DocumentController extends BaseController
 
         $mpdf->WriteHTML($html);
         
-        // ????????????? In-Memory (I = Inline in browser) ?????????????????
+        // ส่งออกไฟล์แบบ In-Memory (I = Inline in browser) ไม่เซฟไฟล์ลงดิสก์
         $this->response->setHeader('Content-Type', 'application/pdf');
         $mpdf->Output($document['document_number'] . '.pdf', 'I');
         exit();
